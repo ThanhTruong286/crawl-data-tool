@@ -11,21 +11,27 @@ let get_home = (req, res) => {
 
 let crawlData = async () => {
     //open browser
-    const browser = await puppeteer.launch({headless: false});
-    const page = await browser.newPage();
+    const browser = await puppeteer.launch({headless: true});//with headless = true means browser will not appear
+    const page = await browser.newPage();//open in new page
     //enter browser
-    await page.goto("https://kenh14.vn/");
+    await page.goto("https://store.steampowered.com/");
 
+    //collect data from HTML with DOM
     const articles = await page.evaluate(()=>{
-        let titlelinks = document.querySelectorAll('h3.klwfnswn-title > a');
-        titlelinks = [...titlelinks];
+        //collect all object <a> inside h3 with class = klwfnwn-title
+        let titlelinks = document.querySelectorAll('.focus > a');
+        titlelinks = [...titlelinks];//change nodelist to array
+        //use map with titlelinks array
         let articles = titlelinks.map(link => ({
+            //collect title attribute and link attribute
             titlel: link.getAttribute('title'),
             url: link.getAttribute('href')
         }));
 
+        //return result
         return articles;
     });
+    //show result and close browser
     console.log(articles);
     await browser.close();
 }
