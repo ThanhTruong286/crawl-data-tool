@@ -1,6 +1,4 @@
-import express from 'express';
-import fetch from 'node-fetch';
-import cheerio from 'cheerio';
+import puppeteer from 'puppeteer';
 
 let get_home = (req, res) => {
     try {
@@ -10,38 +8,31 @@ let get_home = (req, res) => {
         console.log("THE FUCKING ERROR IS " + e);
     }
 }
-const seenUrl = {};
-const getUrl = (link) => {
-    if (link.includes('http')) {
-        return link;
-    }
-    else {
-        return `http://localhost:3000/${link}`;
-    }
-}
-const crawl = async (url) => {
-    if (seenUrl[link]) return;
-    console.log("crawling", url);
-    seenUrl[url] = true;
 
-    const response = await fetch(url);
-    const html = await response.text();
-    console.log("html", html);
-    const $ = cheerio.load(html);
-    const link = $('a').map((i, link) => link.attribs.href).get();
+let crawlData = async () => {
+    //open browser
+    const browser = await puppeteer.launch({headless: false});
+    const page = await browser.newPage();
+    //enter browser
+    await page.goto("https://kenh14.vn/");
 
-    const image = $('img').map((i, link) => link.attribs.href).get();
-    console.log(link);
-    link.forEach(link => {
-        crawl({
-            url: getUrl(link),
-        })
-    })
+    const articles = await page.evaluate(()=>{
+        let titlelinks = document.querySelectorAll('h3.klwfnswn-title > a');
+        titlelinks = [...titlelinks];
+        let articles = titlelinks.map(link => ({
+            titlel: link.getAttribute('title'),
+            url: link.getAttribute('href')
+        }));
+
+        return articles;
+    });
+    console.log(articles);
+    await browser.close();
 }
 
 const home_controller = {
     get_home,
-    crawl
+    crawlData
 };
 
 export default home_controller;

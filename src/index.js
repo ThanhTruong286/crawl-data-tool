@@ -10,7 +10,7 @@ configViewEngine(app);
 
 initWebRoute(app);
 
-home_controller.crawl("http://localhost:3000/");
+home_controller.crawlData();
 //default port
 const port = 3000;
 
